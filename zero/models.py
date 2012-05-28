@@ -4,13 +4,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from django.db.models.signals import post_save
-
+from django.db.models.loading import get_model
 
 from zero.notify import send_notification
 from django.dispatch import receiver
 
 import itertools
 import datetime
+
+from django.conf import settings  
+
+X = get_model(settings.ZEROAPP, settings.ZEROAPP_MODEL)
 
 
 #TODO multilanguage
@@ -40,32 +44,11 @@ class EntryInfoMixin(object):
         return self.entry_info.get().update_datetime
 
         
-class Project(EntryInfoMixin, models.Model):
-    verbose_name = models.CharField(max_length=255, verbose_name="Title")
-    name = models.SlugField(verbose_name="Machine name")
-    description = models.TextField(verbose_name="Description")
-    authors = models.ManyToManyField('auth.User', verbose_name="Authors", related_name="projects")
-    entry_info = generic.GenericRelation(EntryInfo)    
-
-    default_priority = models.ForeignKey('zero.Priority', verbose_name="Default priority")
-    default_status = models.ForeignKey('zero.Status', verbose_name="Default status")
-    default_category = models.ForeignKey('zero.Category', verbose_name="Default category")
-
-    def get_authors(self):
-        """ Returns auhtors. """
-        return self.authors.all()
-
-    def get_subscribers(self):
-        return [author.email for author in self.authors.all()]
-
-    def __unicode__(self):
-        return u"%s" % self.verbose_name
-
 class Issue(EntryInfoMixin, models.Model):
     verbose_name = models.CharField(max_length=255, verbose_name="Title")
     name = models.SlugField(verbose_name="Name")
     description = models.TextField(verbose_name="Description", blank=True)
-    project = models.ForeignKey("Project", verbose_name="Project", related_name="issues")
+    x = models.ForeignKey(X, verbose_name="X", related_name="issues")
     dependencies = models.ManyToManyField("Issue", null=True, blank=True, verbose_name="Dependencies", related_name="issues")
     deadline = models.DateField(null=True, blank=True)
     status = models.ForeignKey("Status", verbose_name="Status", related_name="issues")
@@ -74,7 +57,7 @@ class Issue(EntryInfoMixin, models.Model):
     entry_info = generic.GenericRelation(EntryInfo)    
 
     def get_subscribers(self):
-        return [author.email for author in self.project.authors.all()]
+        return [author.email for author in self.x.authors.all()]
 
     def get_status(self):
         return self.status
@@ -98,8 +81,8 @@ class Issue(EntryInfoMixin, models.Model):
         return self.category
 
     def get_authors(self):
-        """ Returns authors of the related project. """
-        return self.project.authors.all()
+        """ Returns authors of the related x. """
+        return self.x.authors.all()
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -134,7 +117,7 @@ class Task(EntryInfoMixin, models.Model):
 
 
     def get_title(self):
-        return "%s: %s (%s, %s)" % (self.asignee, self.description, self.issue.verbose_name, self.issue.project.verbose_name)
+        return "%s: %s (%s, %s)" % (self.asignee, self.description, self.issue.verbose_name, self.issue.x.verbose_name)
 
     def get_status(self):
         if self.accomplished_date:
@@ -142,7 +125,7 @@ class Task(EntryInfoMixin, models.Model):
         return 'pending'
 
     def get_subscribers(self):
-        return [author.email for author in self.issue.project.authors.all()]
+        return [author.email for author in self.issue.x.authors.all()]
 
 #    class Meta:
 #        unique_together = (('issue', 'asignee'),)
@@ -188,7 +171,7 @@ class Comment(EntryInfoMixin, models.Model):
     objects = CommentManager()
 
     def get_subscribers(self):
-        return [author.email for author in self.issue.project.authors.all()]
+        return [author.email for author in self.issue.x.authors.all()]
 
 class Category(BaseIssueState):
 
@@ -198,7 +181,7 @@ class Category(BaseIssueState):
 
 # ----------------------------------------------
 # 
-from pyoss2.middleware import threading
+"""from pyoss2.middleware import threading
 from django.dispatch import receiver
 
 @receiver(post_save, sender=Comment)
@@ -216,7 +199,7 @@ def log_entry(sender, instance, created, using, **kwargs):
         instance.entry_info.get().save()
 
     send_notification(instance, created)
-
+"""
     
 #post_save.connect(log_entry, sender=models.get_model('zero', 'Project'))
 #post_save.connect(log_entry, sender=models.get_model('zero', 'Issue'))

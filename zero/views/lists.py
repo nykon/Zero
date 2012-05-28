@@ -10,7 +10,8 @@ from django.views.generic import View
 from zero import forms
 from django.utils.encoding import smart_unicode, smart_str 
 
-from synergy.templates.regions.views import RegionViewMixin
+from zero.tools.tools import RegionViewMixin
+#from synergy.templates.regions.views import RegionViewMixin
 
 import itertools
 import datetime
@@ -18,8 +19,10 @@ from django.utils import simplejson
 
 from django.core.context_processors import csrf
 
+from django.conf import settings
+
 class CalendarView(RegionViewMixin, ListView):
-    model = get_model('zero', 'Project')
+    model = get_model(settings.ZEROAPP, settings.ZEROAPP_MODEL)
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(CalendarView, self).get_context_data(*args, **kwargs)
@@ -32,35 +35,6 @@ class CalendarView(RegionViewMixin, ListView):
        #ctx['navlinks'] = {'Add new project': reverse('create_project')}
         return  ctx
 
-
-class ProjectsView(RegionViewMixin, ListView):
-    model = get_model('zero','Project')
-
-    def get_context_data(self, *args, **kwargs):
-        ctx = super(ProjectsView, self).get_context_data(*args, **kwargs)
-        ctx['title'] = 'Projects list'
-        ctx['navlinks'] = {'Add new project': reverse('create_project')}
-        return  ctx
-
-class ProjectIssuesView(RegionViewMixin, ListView):
-    
-    def get_queryset(self):
-        queryset=get_model('zero','Issue').objects.filter(project__id__exact=self.kwargs.get('proj_id'))
-        
-        return queryset
-    
-    def get_context_data(self, **kwargs):
-        project = get_object_or_404(get_model('zero','Project'), id__exact=self.kwargs.get('proj_id'))
-        context = super(ProjectIssuesView, self).get_context_data(**kwargs)
-        context['project'] = project
-        context['title'] = "Project %s issues" % project
-        context['navlinks'] = {'Create Issue': reverse('create_project_issue', args=[project.id]),
-                               'Edit': reverse('edit_project', args=[project.id]),
-                               #'Delete': reverse('delete_object', args=['project', project.id]),
-                               }
-        return context
-
-        
 class TasksView(RegionViewMixin, ListView):
     model = get_model('zero', 'Task')
 

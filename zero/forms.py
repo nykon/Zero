@@ -2,12 +2,14 @@ from django import forms
 from django.db.models import get_model
 import urllib
 
+from zeroapp.models import X
+
 class IssueFilter(forms.Form):
-    FIELDS = {'project': 'name', 'status': 'name', 'priority': 'name',
+    FIELDS = {'status': 'name', 'priority': 'name',
               'category': 'name', 'author': 'username', 'assigned': 'username'}
 
 
-    project = forms.ModelChoiceField(queryset=get_model('zero', 'Project').objects.all(), required=False, empty_label="Any")
+    #project = forms.ModelChoiceField(queryset=X.objects.all(), required=False, empty_label="Any")
     status = forms.ModelChoiceField(queryset=get_model('zero', 'Status').objects.all(), required=False, empty_label="Any")
     priority = forms.ModelChoiceField(queryset=get_model('zero', 'Priority').objects.all(), required=False, empty_label="Any")
     category = forms.ModelChoiceField(queryset=get_model('zero', 'Category').objects.all(), required=False, empty_label="Any")

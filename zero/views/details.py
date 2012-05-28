@@ -13,7 +13,7 @@ class IssueView(RegionViewMixin, DetailView):
     def get_context_data(self, *args, **kwargs):
         ctx = super(IssueView, self).get_context_data(*args, **kwargs)
         ctx['title'] = "Issue: %s" % self.get_object().verbose_name
-        ctx['navlinks'] = {'Project': reverse('list_project_issues', args=[self.get_object().project.id]),
+        ctx['navlinks'] = {'X': reverse('list_x_issues', args=[self.get_object().x.id]),
                            'Edit': reverse('edit_issue', args=[self.get_object().id]),
                            'Delete': reverse('delete_object', args=['issue', self.get_object().id]),
                            }
