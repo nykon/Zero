@@ -4,5 +4,5 @@ created with Django.
 At this moment the code is in its deep, deep development phase, so... If you are interested in, watch this repo.
 
 To add the Zero app to Yours project, please add the following two variables into the settings.py file:
-ZEROAPP - the application into Zero will be merged,
+ZEROAPP - the application into which Zero will be merged,
 ZEROAPP_MODEL - the model of the ZEROAPP
